@@ -11,6 +11,39 @@ type ImageState =
   | { status: "ready"; dataUrl: string; caption: string }
   | { status: "error" };
 
+type Trophy = { id: number; dataUrl: string; caption: string };
+
+function TrophyShelf({ trophies }: { trophies: Trophy[] }) {
+  if (trophies.length === 0) return null;
+  return (
+    <div
+      aria-hidden
+      className="pointer-events-none fixed inset-x-0 bottom-0 z-0 px-4 pb-6"
+    >
+      <div className="mx-auto flex max-w-4xl flex-wrap justify-center gap-3">
+        {trophies.map((t) => {
+          const rotation = ((t.id * 17) % 11) - 5;
+          return (
+            <div
+              key={t.id}
+              style={{ transform: `rotate(${rotation}deg)` }}
+              className="h-20 w-20 overflow-hidden rounded-md border border-stone-300/30 bg-stone-900/40 shadow-xl ring-1 ring-black/50 backdrop-blur-sm"
+              title={t.caption}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={t.dataUrl}
+                alt={t.caption}
+                className="h-full w-full object-cover opacity-90"
+              />
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function AnswerImage({ state }: { state: ImageState | undefined }) {
   if (!state || state.status === "loading") {
     return (
@@ -121,6 +154,15 @@ export default function Home() {
     ? "from-stone-900 via-stone-900 to-stone-950"
     : current.theme.gradient;
 
+  const trophyCount = finished ? game.length : index;
+  const trophies: Trophy[] = game
+    .slice(0, trophyCount)
+    .flatMap((q) => {
+      const s = imageCache[q.id];
+      if (!s || s.status !== "ready") return [];
+      return [{ id: q.id, dataUrl: s.dataUrl, caption: s.caption }];
+    });
+
   return (
     <div
       className={`relative flex min-h-screen flex-col items-center justify-center bg-gradient-to-br ${bgGradient} p-6 text-stone-100 font-sans transition-colors duration-700`}
@@ -130,7 +172,7 @@ export default function Home() {
           aria-hidden
           className="pointer-events-none absolute inset-0 flex items-center justify-center select-none"
         >
-          <span className="text-[20rem] leading-none opacity-10 blur-[1px] drop-shadow-[0_0_30px_rgba(0,0,0,0.5)]">
+          <span className="text-[20rem] leading-none opacity-[0.06] blur-[1px] drop-shadow-[0_0_30px_rgba(0,0,0,0.5)]">
             {current.theme.emoji}
           </span>
         </div>
@@ -213,6 +255,7 @@ export default function Home() {
           </section>
         )}
       </main>
+      <TrophyShelf trophies={trophies} />
       {!finished && <HintChat questionId={current.id} />}
     </div>
   );
