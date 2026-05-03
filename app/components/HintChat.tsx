@@ -35,13 +35,20 @@ export function HintChat({ questionIndex }: Props) {
     [],
   );
 
-  const { messages, sendMessage, status, error } = useChat({ transport });
+  const { messages, sendMessage, setMessages, stop, status, error } = useChat({
+    transport,
+  });
 
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages, status]);
+
+  useEffect(() => {
+    stop();
+    setMessages([]);
+  }, [questionIndex, stop, setMessages]);
 
   const isStreaming = status === "submitted" || status === "streaming";
 
