@@ -6,16 +6,80 @@ import { HintChat } from "./components/HintChat";
 
 const QUESTIONS_PER_GAME = 10;
 
+type ImageState =
+  | { status: "loading" }
+  | { status: "ready"; dataUrl: string; caption: string }
+  | { status: "error" };
+
+function AnswerImage({ state }: { state: ImageState | undefined }) {
+  if (!state || state.status === "loading") {
+    return (
+      <div className="flex h-64 items-center justify-center rounded-lg border border-stone-700 bg-stone-900/60">
+        <span className="animate-pulse text-sm text-stone-400">
+          Generating image of the answer...
+        </span>
+      </div>
+    );
+  }
+  if (state.status === "error") {
+    return (
+      <div className="rounded-lg bg-red-900/30 px-4 py-3 text-center text-sm text-red-300">
+        Couldn&apos;t generate the answer image. Carrying on without it.
+      </div>
+    );
+  }
+  return (
+    <div className="flex flex-col items-center gap-2">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={state.dataUrl}
+        alt={state.caption}
+        className="h-64 w-64 rounded-lg border border-stone-600 object-cover shadow-lg"
+      />
+      <p className="text-sm text-stone-300">
+        <span className="font-medium text-emerald-400">{state.caption}</span>
+      </p>
+    </div>
+  );
+}
+
 export default function Home() {
   const [game, setGame] = useState<Question[] | null>(null);
   const [index, setIndex] = useState(0);
   const [score, setScore] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
   const [finished, setFinished] = useState(false);
+  const [imageCache, setImageCache] = useState<Record<number, ImageState>>({});
 
   useEffect(() => {
     setGame(pickRandomQuestions(QUESTIONS_PER_GAME));
   }, []);
+
+  useEffect(() => {
+    if (selected === null || !game) return;
+    const id = game[index].id;
+    if (imageCache[id]) return;
+
+    setImageCache((c) => ({ ...c, [id]: { status: "loading" } }));
+    fetch("/api/image", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ questionId: id }),
+    })
+      .then(async (r) => {
+        if (!r.ok) throw new Error(await r.text());
+        return r.json() as Promise<{ dataUrl: string; caption: string }>;
+      })
+      .then((data) => {
+        setImageCache((c) => ({
+          ...c,
+          [id]: { status: "ready", dataUrl: data.dataUrl, caption: data.caption },
+        }));
+      })
+      .catch(() => {
+        setImageCache((c) => ({ ...c, [id]: { status: "error" } }));
+      });
+  }, [selected, index, game, imageCache]);
 
   if (!game) {
     return (
@@ -131,16 +195,19 @@ export default function Home() {
               })}
             </div>
             {selected !== null && (
-              <div className="mt-6 flex items-center justify-between">
-                <p className={isCorrect ? "text-emerald-400" : "text-red-400"}>
-                  {isCorrect ? "Correct!" : "Not quite."}
-                </p>
-                <button
-                  onClick={handleNext}
-                  className="rounded-md bg-emerald-600 px-5 py-2 font-medium text-white transition-colors hover:bg-emerald-500"
-                >
-                  {index + 1 >= game.length ? "See Results" : "Next"}
-                </button>
+              <div className="mt-6 space-y-4">
+                <AnswerImage state={imageCache[current.id]} />
+                <div className="flex items-center justify-between">
+                  <p className={isCorrect ? "text-emerald-400" : "text-red-400"}>
+                    {isCorrect ? "Correct!" : "Not quite."}
+                  </p>
+                  <button
+                    onClick={handleNext}
+                    className="rounded-md bg-emerald-600 px-5 py-2 font-medium text-white transition-colors hover:bg-emerald-500"
+                  >
+                    {index + 1 >= game.length ? "See Results" : "Next"}
+                  </button>
+                </div>
               </div>
             )}
           </section>
