@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { questions } from "@/lib/questions";
+import { HintChat } from "./components/HintChat";
 
 export default function Home() {
   const [index, setIndex] = useState(0);
@@ -129,6 +130,7 @@ export default function Home() {
           </section>
         )}
       </main>
+      {!finished && <HintChat questionIndex={index} />}
     </div>
   );
 }
