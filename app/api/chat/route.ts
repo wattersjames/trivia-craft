@@ -1,17 +1,17 @@
 import { convertToModelMessages, streamText, type UIMessage } from "ai";
-import { questions } from "@/lib/questions";
+import { getQuestionById } from "@/lib/questions";
 
 export const maxDuration = 30;
 
 export async function POST(req: Request) {
   const {
     messages,
-    questionIndex,
-  }: { messages: UIMessage[]; questionIndex: number } = await req.json();
+    questionId,
+  }: { messages: UIMessage[]; questionId: number } = await req.json();
 
-  const question = questions[questionIndex];
+  const question = getQuestionById(questionId);
   if (!question) {
-    return new Response("Invalid question index", { status: 400 });
+    return new Response("Invalid question id", { status: 400 });
   }
 
   const correctChoice = question.choices[question.answerIndex];

@@ -5,18 +5,18 @@ import { DefaultChatTransport } from "ai";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 type Props = {
-  questionIndex: number;
+  questionId: number;
 };
 
-export function HintChat({ questionIndex }: Props) {
+export function HintChat({ questionId }: Props) {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
-  const questionIndexRef = useRef(questionIndex);
+  const questionIdRef = useRef(questionId);
 
   useEffect(() => {
-    questionIndexRef.current = questionIndex;
-  }, [questionIndex]);
+    questionIdRef.current = questionId;
+  }, [questionId]);
 
   const transport = useMemo(
     () =>
@@ -27,7 +27,7 @@ export function HintChat({ questionIndex }: Props) {
             body: {
               ...body,
               messages,
-              questionIndex: questionIndexRef.current,
+              questionId: questionIdRef.current,
             },
           };
         },
@@ -48,7 +48,7 @@ export function HintChat({ questionIndex }: Props) {
   useEffect(() => {
     stop();
     setMessages([]);
-  }, [questionIndex, stop, setMessages]);
+  }, [questionId, stop, setMessages]);
 
   const isStreaming = status === "submitted" || status === "streaming";
 

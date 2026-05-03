@@ -1,16 +1,31 @@
 "use client";
 
-import { useState } from "react";
-import { questions } from "@/lib/questions";
+import { useEffect, useState } from "react";
+import { pickRandomQuestions, type Question } from "@/lib/questions";
 import { HintChat } from "./components/HintChat";
 
+const QUESTIONS_PER_GAME = 10;
+
 export default function Home() {
+  const [game, setGame] = useState<Question[] | null>(null);
   const [index, setIndex] = useState(0);
   const [score, setScore] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
   const [finished, setFinished] = useState(false);
 
-  const current = questions[index];
+  useEffect(() => {
+    setGame(pickRandomQuestions(QUESTIONS_PER_GAME));
+  }, []);
+
+  if (!game) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-stone-950 text-stone-500">
+        <span className="text-sm">Shuffling questions...</span>
+      </div>
+    );
+  }
+
+  const current = game[index];
   const isCorrect = selected !== null && selected === current.answerIndex;
 
   function handleSelect(choiceIndex: number) {
@@ -22,7 +37,7 @@ export default function Home() {
   }
 
   function handleNext() {
-    if (index + 1 >= questions.length) {
+    if (index + 1 >= game!.length) {
       setFinished(true);
     } else {
       setIndex((i) => i + 1);
@@ -31,6 +46,7 @@ export default function Home() {
   }
 
   function handleRestart() {
+    setGame(pickRandomQuestions(QUESTIONS_PER_GAME));
     setIndex(0);
     setScore(0);
     setSelected(null);
@@ -69,7 +85,7 @@ export default function Home() {
           <section className="rounded-lg border border-stone-700 bg-stone-800/90 p-8 text-center backdrop-blur">
             <h2 className="text-2xl font-semibold">Game Over</h2>
             <p className="mt-4 text-5xl font-bold text-emerald-400">
-              {score} / {questions.length}
+              {score} / {game.length}
             </p>
             <button
               onClick={handleRestart}
@@ -82,7 +98,7 @@ export default function Home() {
           <section className="rounded-lg border border-stone-700 bg-stone-800/90 p-6 backdrop-blur">
             <div className="mb-4 flex items-center justify-between text-sm text-stone-400">
               <span>
-                Question {index + 1} of {questions.length}
+                Question {index + 1} of {game.length}
               </span>
               <span>Score: {score}</span>
             </div>
@@ -123,14 +139,14 @@ export default function Home() {
                   onClick={handleNext}
                   className="rounded-md bg-emerald-600 px-5 py-2 font-medium text-white transition-colors hover:bg-emerald-500"
                 >
-                  {index + 1 >= questions.length ? "See Results" : "Next"}
+                  {index + 1 >= game.length ? "See Results" : "Next"}
                 </button>
               </div>
             )}
           </section>
         )}
       </main>
-      {!finished && <HintChat questionIndex={index} />}
+      {!finished && <HintChat questionId={current.id} />}
     </div>
   );
 }
