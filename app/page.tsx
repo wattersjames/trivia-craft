@@ -36,18 +36,36 @@ export default function Home() {
     setFinished(false);
   }
 
+  const bgGradient = finished
+    ? "from-stone-900 via-stone-900 to-stone-950"
+    : current.theme.gradient;
+
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-stone-900 p-6 text-stone-100 font-sans">
-      <main className="w-full max-w-2xl">
+    <div
+      className={`relative flex min-h-screen flex-col items-center justify-center bg-gradient-to-br ${bgGradient} p-6 text-stone-100 font-sans transition-colors duration-700`}
+    >
+      {!finished && (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 flex items-center justify-center select-none"
+        >
+          <span className="text-[20rem] leading-none opacity-10 blur-[1px] drop-shadow-[0_0_30px_rgba(0,0,0,0.5)]">
+            {current.theme.emoji}
+          </span>
+        </div>
+      )}
+      <main className="relative z-10 w-full max-w-2xl">
         <header className="mb-8 text-center">
-          <h1 className="text-4xl font-bold tracking-tight text-emerald-400">
+          <h1 className="text-4xl font-bold tracking-tight text-emerald-400 drop-shadow-[0_2px_6px_rgba(0,0,0,0.6)]">
             TriviaCraft
           </h1>
-          <p className="mt-2 text-stone-400">Minecraft trivia, one block at a time.</p>
+          <p className="mt-2 text-stone-300 drop-shadow-[0_1px_3px_rgba(0,0,0,0.6)]">
+            Minecraft trivia, one block at a time.
+          </p>
         </header>
 
         {finished ? (
-          <section className="rounded-lg border border-stone-700 bg-stone-800 p-8 text-center">
+          <section className="rounded-lg border border-stone-700 bg-stone-800/90 p-8 text-center backdrop-blur">
             <h2 className="text-2xl font-semibold">Game Over</h2>
             <p className="mt-4 text-5xl font-bold text-emerald-400">
               {score} / {questions.length}
@@ -60,7 +78,7 @@ export default function Home() {
             </button>
           </section>
         ) : (
-          <section className="rounded-lg border border-stone-700 bg-stone-800 p-6">
+          <section className="rounded-lg border border-stone-700 bg-stone-800/90 p-6 backdrop-blur">
             <div className="mb-4 flex items-center justify-between text-sm text-stone-400">
               <span>
                 Question {index + 1} of {questions.length}
