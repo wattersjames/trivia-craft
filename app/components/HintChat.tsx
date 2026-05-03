@@ -53,6 +53,14 @@ export function HintChat({ questionIndex }: Props) {
     sendMessage({ text });
   }
 
+  function handleHintClick() {
+    if (isStreaming) return;
+    const hasPriorHints = messages.some((m) => m.role === "assistant");
+    sendMessage({
+      text: hasPriorHints ? "Another hint, please." : "Give me a hint.",
+    });
+  }
+
   return (
     <div className="fixed bottom-4 right-4 z-50 flex flex-col items-end">
       {open && (
@@ -107,9 +115,19 @@ export function HintChat({ questionIndex }: Props) {
             )}
           </div>
 
+          <div className="border-t border-stone-700 bg-stone-800 px-3 pt-3">
+            <button
+              type="button"
+              onClick={handleHintClick}
+              disabled={isStreaming}
+              className="w-full rounded-md border border-emerald-600 bg-emerald-600/20 px-3 py-2 text-sm font-medium text-emerald-300 transition-colors hover:bg-emerald-600/40 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              💡 Hint, please
+            </button>
+          </div>
           <form
             onSubmit={handleSubmit}
-            className="flex gap-2 border-t border-stone-700 bg-stone-800 p-3"
+            className="flex gap-2 bg-stone-800 p-3"
           >
             <input
               value={input}
