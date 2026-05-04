@@ -6,113 +6,16 @@ import { HintChat } from "./components/HintChat";
 
 const QUESTIONS_PER_GAME = 10;
 
-type ImageState =
-  | { status: "loading" }
-  | { status: "ready"; dataUrl: string; caption: string }
-  | { status: "error" };
-
-type Trophy = { id: number; dataUrl: string; caption: string };
-
-function TrophyShelf({ trophies }: { trophies: Trophy[] }) {
-  if (trophies.length === 0) return null;
-  return (
-    <div
-      aria-hidden
-      className="pointer-events-none fixed inset-x-0 bottom-0 z-0 px-4 pb-6"
-    >
-      <div className="mx-auto flex max-w-4xl flex-wrap justify-center gap-3">
-        {trophies.map((t) => {
-          const rotation = ((t.id * 17) % 11) - 5;
-          return (
-            <div
-              key={t.id}
-              style={{ transform: `rotate(${rotation}deg)` }}
-              className="h-20 w-20 overflow-hidden rounded-md border border-stone-300/30 bg-stone-900/40 shadow-xl ring-1 ring-black/50 backdrop-blur-sm"
-              title={t.caption}
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={t.dataUrl}
-                alt={t.caption}
-                className="h-full w-full object-cover opacity-90"
-              />
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-function AnswerImage({ state }: { state: ImageState | undefined }) {
-  if (!state || state.status === "loading") {
-    return (
-      <div className="flex h-64 items-center justify-center rounded-lg border border-stone-700 bg-stone-900/60">
-        <span className="animate-pulse text-sm text-stone-400">
-          Generating image of the answer...
-        </span>
-      </div>
-    );
-  }
-  if (state.status === "error") {
-    return (
-      <div className="rounded-lg bg-red-900/30 px-4 py-3 text-center text-sm text-red-300">
-        Couldn&apos;t generate the answer image. Carrying on without it.
-      </div>
-    );
-  }
-  return (
-    <div className="flex flex-col items-center gap-2">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={state.dataUrl}
-        alt={state.caption}
-        className="h-64 w-64 rounded-lg border border-stone-600 object-cover shadow-lg"
-      />
-      <p className="text-sm text-stone-300">
-        <span className="font-medium text-emerald-400">{state.caption}</span>
-      </p>
-    </div>
-  );
-}
-
 export default function Home() {
   const [game, setGame] = useState<Question[] | null>(null);
   const [index, setIndex] = useState(0);
   const [score, setScore] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
   const [finished, setFinished] = useState(false);
-  const [imageCache, setImageCache] = useState<Record<number, ImageState>>({});
 
   useEffect(() => {
     setGame(pickRandomQuestions(QUESTIONS_PER_GAME));
   }, []);
-
-  useEffect(() => {
-    if (selected === null || !game) return;
-    const id = game[index].id;
-    if (imageCache[id]) return;
-
-    setImageCache((c) => ({ ...c, [id]: { status: "loading" } }));
-    fetch("/api/image", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ questionId: id }),
-    })
-      .then(async (r) => {
-        if (!r.ok) throw new Error(await r.text());
-        return r.json() as Promise<{ dataUrl: string; caption: string }>;
-      })
-      .then((data) => {
-        setImageCache((c) => ({
-          ...c,
-          [id]: { status: "ready", dataUrl: data.dataUrl, caption: data.caption },
-        }));
-      })
-      .catch(() => {
-        setImageCache((c) => ({ ...c, [id]: { status: "error" } }));
-      });
-  }, [selected, index, game, imageCache]);
 
   if (!game) {
     return (
@@ -154,15 +57,6 @@ export default function Home() {
     ? "from-stone-900 via-stone-900 to-stone-950"
     : current.theme.gradient;
 
-  const trophyCount = finished ? game.length : index;
-  const trophies: Trophy[] = game
-    .slice(0, trophyCount)
-    .flatMap((q) => {
-      const s = imageCache[q.id];
-      if (!s || s.status !== "ready") return [];
-      return [{ id: q.id, dataUrl: s.dataUrl, caption: s.caption }];
-    });
-
   return (
     <div
       className={`relative flex min-h-screen flex-col items-center justify-center bg-gradient-to-br ${bgGradient} p-6 text-stone-100 font-sans transition-colors duration-700`}
@@ -172,7 +66,7 @@ export default function Home() {
           aria-hidden
           className="pointer-events-none absolute inset-0 flex items-center justify-center select-none"
         >
-          <span className="text-[20rem] leading-none opacity-[0.06] blur-[1px] drop-shadow-[0_0_30px_rgba(0,0,0,0.5)]">
+          <span className="text-[20rem] leading-none opacity-10 blur-[1px] drop-shadow-[0_0_30px_rgba(0,0,0,0.5)]">
             {current.theme.emoji}
           </span>
         </div>
@@ -237,25 +131,21 @@ export default function Home() {
               })}
             </div>
             {selected !== null && (
-              <div className="mt-6 space-y-4">
-                <AnswerImage state={imageCache[current.id]} />
-                <div className="flex items-center justify-between">
-                  <p className={isCorrect ? "text-emerald-400" : "text-red-400"}>
-                    {isCorrect ? "Correct!" : "Not quite."}
-                  </p>
-                  <button
-                    onClick={handleNext}
-                    className="rounded-md bg-emerald-600 px-5 py-2 font-medium text-white transition-colors hover:bg-emerald-500"
-                  >
-                    {index + 1 >= game.length ? "See Results" : "Next"}
-                  </button>
-                </div>
+              <div className="mt-6 flex items-center justify-between">
+                <p className={isCorrect ? "text-emerald-400" : "text-red-400"}>
+                  {isCorrect ? "Correct!" : "Not quite."}
+                </p>
+                <button
+                  onClick={handleNext}
+                  className="rounded-md bg-emerald-600 px-5 py-2 font-medium text-white transition-colors hover:bg-emerald-500"
+                >
+                  {index + 1 >= game.length ? "See Results" : "Next"}
+                </button>
               </div>
             )}
           </section>
         )}
       </main>
-      <TrophyShelf trophies={trophies} />
       {!finished && <HintChat questionId={current.id} />}
     </div>
   );
