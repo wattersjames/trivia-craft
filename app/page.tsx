@@ -6,6 +6,41 @@ import { HintChat } from "./components/HintChat";
 
 const QUESTIONS_PER_GAME = 10;
 
+function MinecraftBackdrop() {
+  return (
+    <>
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-sky-500 via-sky-300 to-sky-100" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-2/3 overflow-hidden">
+        <div className="absolute top-[6%] left-[8%] h-5 w-32 bg-white opacity-95" />
+        <div className="absolute top-[14%] left-[34%] h-4 w-24 bg-white opacity-90" />
+        <div className="absolute top-[10%] right-[12%] h-5 w-40 bg-white opacity-95" />
+        <div className="absolute top-[26%] right-[38%] h-4 w-20 bg-white opacity-85" />
+        <div className="absolute top-[34%] left-[22%] h-4 w-28 bg-white opacity-90" />
+        <div className="absolute top-[44%] right-[18%] h-4 w-24 bg-white opacity-85" />
+      </div>
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-0">
+        <div className="h-2 bg-green-400" />
+        <div className="h-12 bg-green-600" />
+        <div
+          className="h-2"
+          style={{
+            backgroundImage:
+              "repeating-linear-gradient(to right, #16a34a 0 10px, #78350f 10px 20px)",
+          }}
+        />
+        <div className="h-32 bg-amber-900" />
+        <div
+          className="h-24 bg-amber-950"
+          style={{
+            backgroundImage:
+              "repeating-linear-gradient(to right, transparent 0 24px, rgba(0,0,0,0.15) 24px 28px), repeating-linear-gradient(to bottom, transparent 0 16px, rgba(0,0,0,0.15) 16px 20px)",
+          }}
+        />
+      </div>
+    </>
+  );
+}
+
 export default function Home() {
   const [game, setGame] = useState<Question[] | null>(null);
   const [index, setIndex] = useState(0);
@@ -19,8 +54,8 @@ export default function Home() {
 
   if (!game) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-stone-950 text-stone-500">
-        <span className="text-sm">Shuffling questions...</span>
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-sky-500 to-sky-200 text-stone-700">
+        <span className="text-sm font-medium">Shuffling questions...</span>
       </div>
     );
   }
@@ -53,69 +88,64 @@ export default function Home() {
     setFinished(false);
   }
 
-  const bgGradient = finished
-    ? "from-stone-900 via-stone-900 to-stone-950"
-    : current.theme.gradient;
-
   return (
-    <div
-      className={`relative flex min-h-screen flex-col items-center justify-center bg-gradient-to-br ${bgGradient} p-6 text-stone-100 font-sans transition-colors duration-700`}
-    >
-      {!finished && (
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 flex items-center justify-center select-none"
-        >
-          <span className="text-[20rem] leading-none opacity-10 blur-[1px] drop-shadow-[0_0_30px_rgba(0,0,0,0.5)]">
-            {current.theme.emoji}
-          </span>
-        </div>
-      )}
+    <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden p-6 font-sans">
+      <MinecraftBackdrop />
       <main className="relative z-10 w-full max-w-2xl">
         <header className="mb-8 text-center">
-          <h1 className="text-4xl font-bold tracking-tight text-emerald-400 drop-shadow-[0_2px_6px_rgba(0,0,0,0.6)]">
+          <h1 className="text-5xl font-bold tracking-tight text-white drop-shadow-[3px_3px_0_rgba(0,0,0,0.7)]">
             TriviaCraft
           </h1>
-          <p className="mt-2 text-stone-300 drop-shadow-[0_1px_3px_rgba(0,0,0,0.6)]">
+          <p className="mt-2 text-stone-100 drop-shadow-[2px_2px_0_rgba(0,0,0,0.6)]">
             Minecraft trivia, one block at a time.
           </p>
         </header>
 
         {finished ? (
-          <section className="rounded-lg border border-stone-700 bg-stone-800/90 p-8 text-center backdrop-blur">
-            <h2 className="text-2xl font-semibold">Game Over</h2>
-            <p className="mt-4 text-5xl font-bold text-emerald-400">
+          <section className="border-4 border-t-stone-900 border-l-stone-900 border-r-stone-500 border-b-stone-500 bg-stone-700/95 p-8 text-center text-stone-100 backdrop-blur">
+            <h2 className="text-2xl font-semibold drop-shadow-[2px_2px_0_rgba(0,0,0,0.5)]">
+              Game Over
+            </h2>
+            <p className="mt-4 text-5xl font-bold text-emerald-300 drop-shadow-[2px_2px_0_rgba(0,0,0,0.6)]">
               {score} / {game.length}
             </p>
             <button
               onClick={handleRestart}
-              className="mt-8 rounded-md bg-emerald-600 px-6 py-3 font-medium text-white transition-colors hover:bg-emerald-500"
+              className="mt-8 border-4 border-t-emerald-400 border-l-emerald-400 border-r-emerald-900 border-b-emerald-900 bg-emerald-600 px-6 py-3 font-medium text-white transition-colors hover:bg-emerald-500 active:translate-y-[2px]"
             >
               Play Again
             </button>
           </section>
         ) : (
-          <section className="rounded-lg border border-stone-700 bg-stone-800/90 p-6 backdrop-blur">
-            <div className="mb-4 flex items-center justify-between text-sm text-stone-400">
+          <section className="border-4 border-t-stone-900 border-l-stone-900 border-r-stone-500 border-b-stone-500 bg-stone-700/95 p-6 text-stone-100 backdrop-blur">
+            <div className="mb-4 flex items-center justify-between text-sm text-stone-300">
               <span>
                 Question {index + 1} of {game.length}
               </span>
               <span>Score: {score}</span>
             </div>
-            <h2 className="mb-6 text-xl font-medium">{current.prompt}</h2>
+            <h2 className="mb-6 text-xl font-medium">
+              <span className="mr-2" aria-hidden>
+                {current.theme.emoji}
+              </span>
+              {current.prompt}
+            </h2>
             <div className="grid gap-3">
               {current.choices.map((choice, i) => {
                 const isAnswer = i === current.answerIndex;
                 const isSelected = i === selected;
                 let style =
-                  "border-stone-600 bg-stone-700 hover:border-emerald-500 hover:bg-stone-600";
+                  "border-t-stone-400 border-l-stone-400 border-r-stone-900 border-b-stone-900 bg-stone-600 hover:bg-stone-500";
                 if (selected !== null) {
                   if (isAnswer) {
-                    style = "border-emerald-500 bg-emerald-900/40";
+                    style =
+                      "border-t-emerald-400 border-l-emerald-400 border-r-emerald-900 border-b-emerald-900 bg-emerald-700";
                   } else if (isSelected) {
-                    style = "border-red-500 bg-red-900/40";
+                    style =
+                      "border-t-red-400 border-l-red-400 border-r-red-900 border-b-red-900 bg-red-700";
                   } else {
-                    style = "border-stone-700 bg-stone-800 opacity-60";
+                    style =
+                      "border-t-stone-700 border-l-stone-700 border-r-stone-900 border-b-stone-900 bg-stone-800 opacity-60";
                   }
                 }
                 return (
@@ -123,7 +153,7 @@ export default function Home() {
                     key={i}
                     onClick={() => handleSelect(i)}
                     disabled={selected !== null}
-                    className={`rounded-md border-2 px-4 py-3 text-left transition-colors ${style}`}
+                    className={`border-4 px-4 py-3 text-left text-stone-100 transition-colors ${style}`}
                   >
                     {choice}
                   </button>
@@ -132,12 +162,18 @@ export default function Home() {
             </div>
             {selected !== null && (
               <div className="mt-6 flex items-center justify-between">
-                <p className={isCorrect ? "text-emerald-400" : "text-red-400"}>
+                <p
+                  className={
+                    isCorrect
+                      ? "text-emerald-300 drop-shadow-[1px_1px_0_rgba(0,0,0,0.6)]"
+                      : "text-red-300 drop-shadow-[1px_1px_0_rgba(0,0,0,0.6)]"
+                  }
+                >
                   {isCorrect ? "Correct!" : "Not quite."}
                 </p>
                 <button
                   onClick={handleNext}
-                  className="rounded-md bg-emerald-600 px-5 py-2 font-medium text-white transition-colors hover:bg-emerald-500"
+                  className="border-4 border-t-emerald-400 border-l-emerald-400 border-r-emerald-900 border-b-emerald-900 bg-emerald-600 px-5 py-2 font-medium text-white transition-colors hover:bg-emerald-500 active:translate-y-[2px]"
                 >
                   {index + 1 >= game.length ? "See Results" : "Next"}
                 </button>
