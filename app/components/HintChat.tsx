@@ -75,7 +75,7 @@ export function HintChat({ questionId }: Props) {
           <header className="flex items-center justify-between border-b border-stone-700 bg-stone-800 px-4 py-3">
             <div>
               <h3 className="text-sm font-semibold text-emerald-400">
-                Allay
+                Alexander&apos;s AI Helper
               </h3>
               <p className="text-xs text-stone-400">Hints, never answers.</p>
             </div>
