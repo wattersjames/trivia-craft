@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { pickRandomQuestions, type Question } from "@/lib/questions";
 import { HintChat } from "./components/HintChat";
+import { useEndGameMusic } from "./hooks/useEndGameMusic";
 
 const QUESTIONS_PER_GAME = 10;
 
@@ -47,10 +48,13 @@ export default function Home() {
   const [score, setScore] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
   const [finished, setFinished] = useState(false);
+  const [muted, setMuted] = useState(false);
 
   useEffect(() => {
     setGame(pickRandomQuestions(QUESTIONS_PER_GAME));
   }, []);
+
+  useEndGameMusic(finished && !muted);
 
   if (!game) {
     return (
@@ -102,7 +106,14 @@ export default function Home() {
         </header>
 
         {finished ? (
-          <section className="border-4 border-t-stone-900 border-l-stone-900 border-r-stone-500 border-b-stone-500 bg-stone-700/95 p-8 text-center text-stone-100 backdrop-blur">
+          <section className="relative border-4 border-t-stone-900 border-l-stone-900 border-r-stone-500 border-b-stone-500 bg-stone-700/95 p-8 text-center text-stone-100 backdrop-blur">
+            <button
+              onClick={() => setMuted((m) => !m)}
+              aria-label={muted ? "Unmute music" : "Mute music"}
+              className="absolute top-3 right-3 border-2 border-t-stone-400 border-l-stone-400 border-r-stone-900 border-b-stone-900 bg-stone-600 px-2 py-1 text-sm hover:bg-stone-500"
+            >
+              {muted ? "🔇" : "🔊"}
+            </button>
             <h2 className="text-2xl font-semibold drop-shadow-[2px_2px_0_rgba(0,0,0,0.5)]">
               Game Over
             </h2>
